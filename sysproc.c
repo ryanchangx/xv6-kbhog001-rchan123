@@ -18,7 +18,7 @@ sys_exit(void)
 {
   exit();
   return 0;  // not reached
-}
+}f
 
 int
 sys_wait(void)
