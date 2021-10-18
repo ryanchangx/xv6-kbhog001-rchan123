@@ -89,3 +89,12 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+
+//int waitpid defined
+
+int
+sys_waitpid(void){
+
+  return waitpid(0, 0, 0);
+}
