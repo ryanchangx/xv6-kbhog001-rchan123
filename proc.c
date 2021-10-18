@@ -279,7 +279,6 @@ wait(int *status)
   int havekids, pid;
   struct proc *curproc = myproc();
   // printf(1, "wait called");
-  
   acquire(&ptable.lock);
   for(;;){
     // Scan through table looking for exited children.
@@ -299,7 +298,7 @@ wait(int *status)
         p->name[0] = 0;
         p->killed = 0;
         p->state = UNUSED;
-        p->status = *status;
+        status = &(curproc->status);
         release(&ptable.lock);
         return pid;
       }

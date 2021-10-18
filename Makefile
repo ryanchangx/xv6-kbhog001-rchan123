@@ -181,6 +181,7 @@ UPROGS=\
 	_usertests\
 	_wc\
 	_zombie\
+	_lab1test\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
@@ -205,7 +206,7 @@ xv6.pdf: $(PRINT)
 print: xv6.pdf
 
 # run in emulators
-
+lab1_test.c\
 bochs : fs.img xv6.img
 	if [ ! -e .bochsrc ]; then ln -s dot-bochsrc .bochsrc; fi
 	bochs -q
@@ -253,7 +254,8 @@ EXTRA=\
 	printf.c umalloc.c\
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
 	.gdbinit.tmpl gdbutil\
-
+	lab1test\
+	
 dist:
 	rm -rf dist
 	mkdir dist
