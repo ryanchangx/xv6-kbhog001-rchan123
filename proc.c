@@ -278,6 +278,7 @@ wait(int *status)
   struct proc *p;
   int havekids, pid;
   struct proc *curproc = myproc();
+  // printf(1, "wait called");
   
   acquire(&ptable.lock);
   for(;;){
@@ -543,7 +544,16 @@ waitpid(int pid, int* status, int options)
 {
   struct proc *p;
   int havekids;
-  struct proc *curproc = myproc();
+  struct proc *curproc = 0;
+  for(p = ptable.proc; p <  &ptable.proc[NPROC]; p++){
+    if(p->pid == pid){
+      curproc = p;
+      break;
+    }
+  }
+  if(!curproc){
+    return -1;
+  }
   
   acquire(&ptable.lock);
   for(;;){
@@ -555,7 +565,6 @@ waitpid(int pid, int* status, int options)
       havekids = 1;
       if(p->state == ZOMBIE){
         // Found one.
-        pid = p->pid;
         kfree(p->kstack);
         p->kstack = 0;
         freevm(p->pgdir);
