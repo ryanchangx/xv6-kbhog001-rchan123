@@ -558,16 +558,18 @@ waitpid(int pid, int* status, int options)
   
   acquire(&ptable.lock);
   for(;;){
-    kfree(curproc->kstack);
-    curproc->kstack = 0;
-    freevm(curproc->pgdir);
-    curproc->pid = 0;
-    curproc->parent = 0;
-    curproc->name[0] = 0;
-    curproc->killed = 0;
-    curproc->state = UNUSED;
-    release(&ptable.lock);
-    return pid;
+    if(p->state == ZOMBIE){
+      kfree(curproc->kstack);
+      curproc->kstack = 0;
+      freevm(curproc->pgdir);
+      curproc->pid = 0;
+      curproc->parent = 0;
+      curproc->name[0] = 0;
+      curproc->killed = 0;
+      curproc->state = UNUSED;
+      release(&ptable.lock);
+      return pid;
+    }
     // Scan through table looking for exited children.
     // havekids = 0;
     // for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
