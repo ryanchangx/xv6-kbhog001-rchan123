@@ -543,22 +543,39 @@ int
 waitpid(int pid, int* status, int options)
 {
   struct proc *p;
-  // int havekids;
   struct proc *curproc = 0;
   for(p = ptable.proc; p <  &ptable.proc[NPROC]; p++){
     if(p->pid == pid){
       curproc = p;
+      if(options == 1){
+        if(p->state == ZOMBIE){
+          acquire(&ptable.lock);
+          kfree(p->kstack);
+          p->kstack = 0;
+          freevm(p->pgdir);
+          p->pid = 0;
+          p->parent = 0;
+          p->name[0] = 0;
+          p->killed = 0;
+          p->state = UNUSED;
+          release(&ptable.lock);
+          return p->status;
+        }
+        else{
+          return 0;
+        }
+      }
       break;
     }
   }
-  if(curproc == 0){
+  if(curproc == 0 || options == 1){
     return -1;
   }
   *status = curproc->status;
-  
   acquire(&ptable.lock);
   for(;;){
-    if(p->state == ZOMBIE){
+    
+    if(curproc->state == ZOMBIE){
       kfree(curproc->kstack);
       curproc->kstack = 0;
       freevm(curproc->pgdir);
@@ -570,34 +587,6 @@ waitpid(int pid, int* status, int options)
       release(&ptable.lock);
       return pid;
     }
-    // Scan through table looking for exited children.
-    // havekids = 0;
-    // for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-    //   if(p->parent != curproc)
-    //     continue;
-    //   havekids = 1;
-    //   if(p->state == ZOMBIE){
-    //     // Found one.
-    //     kfree(p->kstack);
-    //     p->kstack = 0;
-    //     freevm(p->pgdir);
-    //     p->pid = 0;
-    //     p->parent = 0;
-    //     p->name[0] = 0;
-    //     p->killed = 0;
-    //     p->state = UNUSED;
-    //     release(&ptable.lock);
-    //     return pid;
-    //   }
-    // }
-
-    // // No point waiting if we don't have any children.
-    // if(!havekids || curproc->killed){
-    //   release(&ptable.lock);
-    //   return -1;
-    // }
-
-    // // Wait for children to exit.  (See wakeup1 call in proc_exit.)
-    // sleep(curproc, &ptable.lock);  //DOC: wait-sleep
+    // Scan through table looking for exited children
   }
 }
