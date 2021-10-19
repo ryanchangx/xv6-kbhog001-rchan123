@@ -548,6 +548,7 @@ waitpid(int pid, int* status, int options)
     if(p->pid == pid){
       curproc = p;
       if(options == 1){
+        *status = p->status;
         if(p->state == ZOMBIE){
           acquire(&ptable.lock);
           kfree(p->kstack);
