@@ -231,7 +231,7 @@ exit(int status)
   struct proc *p;
   int fd;
 
-  curproc->status = status;
+  
   
   if(curproc == initproc)
     panic("init exiting");
@@ -264,6 +264,7 @@ exit(int status)
     }
   }
 
+  curproc->status = status;
   // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE;
   sched();
@@ -298,8 +299,8 @@ wait(int *status)
         p->name[0] = 0;
         p->killed = 0;
         p->state = UNUSED;
-        p->status = *status;
-
+        *status = p->status;
+        //status = &(curproc->status);
         release(&ptable.lock);
         return pid;
       }
@@ -505,9 +506,9 @@ kill(int pid)
 int
 waitpid(int pid, int *status, int options){
  struct proc *p;
-  int havekids;
-  struct proc *curproc = 0;
-  for (p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+  int havekids, newpid;
+  struct proc *curproc = myproc();
+  /*for (p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if (p->pid == pid){
         curproc = p;
         break;
@@ -515,32 +516,32 @@ waitpid(int pid, int *status, int options){
   }
   if (!curproc){
     return -1;
-  }
+  }*/
   
   acquire(&ptable.lock);
   for(;;){
     // Scan through table looking for exited children.
     havekids = 0;
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->parent != curproc)
+      if(pid != p->pid)
         continue;
       havekids = 1;
-      //wait(0);
       if(p->state == ZOMBIE){
         // Found one.
         //pid = p->pid;
         kfree(p->kstack);
         p->kstack = 0;
         freevm(p->pgdir);
+        newpid = p->pid;
         p->pid = 0;
         p->parent = 0;
         p->name[0] = 0;
         p->killed = 0;
         p->state = UNUSED;
-        p->status = *status;
+        *status = p->status;
 
         release(&ptable.lock);
-        return pid;
+        return newpid;
       }
     }
 
