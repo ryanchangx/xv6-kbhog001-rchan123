@@ -104,7 +104,7 @@ sys_waitpid(void){
   int pid;
   int option;
   argptr(0, (void*)&status, sizeof(status));
-  argint(0, &pid);
-  argint(0, &option);
-  return waitpid(pid, status, option = 0);
+  argint(1, &pid);
+  argint(2, &option);
+  return waitpid(pid, status, option);
 }
